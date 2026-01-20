@@ -1,0 +1,350 @@
+{
+  "feasibilityRules": [
+    {
+      "field": "variability",
+      "valueScores": {
+        "Low": 30,
+        "Medium": 15,
+        "High": -10
+      },
+      "reason": "作業のばらつきが低いほど自動化しやすい"
+    },
+    {
+      "field": "environment",
+      "valueScores": {
+        "Clean": 20,
+        "Normal": 10,
+        "Harsh": -15
+      },
+      "reason": "環境が良好なほど設備が安定稼働"
+    },
+    {
+      "field": "precisionRequired",
+      "valueScores": {
+        "Loose": 20,
+        "Medium": 10,
+        "Tight": -5
+      },
+      "reason": "精度要求が緩いほど実現が容易"
+    },
+    {
+      "field": "integrationNeed",
+      "valueScores": {
+        "None": 20,
+        "Some": 5,
+        "High": -10
+      },
+      "reason": "既存システム連携が少ないほどシンプル"
+    },
+    {
+      "field": "inputStandardization",
+      "valueScores": {
+        "AlreadyStandardized": 25,
+        "CanStandardize": 10,
+        "HardToStandardize": -15
+      },
+      "reason": "標準化済みまたは標準化可能なほど自動化可能"
+    },
+    {
+      "field": "setupChangeFrequency",
+      "valueScores": {
+        "Rare": 15,
+        "Weekly": 5,
+        "Daily": -5,
+        "ManyPerDay": -15
+      },
+      "reason": "段取り替えが少ないほど稼働率高い"
+    },
+    {
+      "field": "requiredFlexibility",
+      "valueScores": {
+        "Low": 15,
+        "Medium": 5,
+        "High": -10
+      },
+      "reason": "柔軟性要求が低いほど固定設備で対応可"
+    },
+    {
+      "field": "dataAvailability",
+      "valueScores": {
+        "Plenty": 20,
+        "Some": 10,
+        "None": -5
+      },
+      "reason": "データがあるほど設計・検証が容易"
+    }
+  ],
+  "impactRules": [
+    {
+      "field": "volumePerMonth",
+      "valueScores": {
+        "<100": 5,
+        "100-1000": 15,
+        "1000-10000": 30,
+        ">10000": 40
+      },
+      "reason": "処理量が多いほど自動化効果が大きい"
+    },
+    {
+      "field": "cycleTime",
+      "valueScores": {
+        "<15s": 5,
+        "15-60s": 15,
+        "1-5m": 25,
+        ">5m": 35
+      },
+      "reason": "サイクルタイムが長いほど人時削減効果が大きい"
+    },
+    {
+      "field": "qualityCriticality",
+      "valueScores": {
+        "Low": 5,
+        "Medium": 15,
+        "High": 30
+      },
+      "reason": "品質クリティカルなほど人的ミス削減効果大"
+    },
+    {
+      "field": "humanSkillDependence",
+      "valueScores": {
+        "Low": 10,
+        "Medium": 20,
+        "High": 30
+      },
+      "reason": "属人性が高いほど標準化・自動化で安定化"
+    },
+    {
+      "field": "safetyRisk",
+      "valueScores": {
+        "None": 0,
+        "Low": 5,
+        "Medium": 15,
+        "High": 25
+      },
+      "reason": "安全リスク高いほど人の安全確保効果大"
+    }
+  ],
+  "riskRules": [
+    {
+      "field": "safetyRisk",
+      "valueScores": {
+        "None": 0,
+        "Low": 10,
+        "Medium": 25,
+        "High": 40
+      },
+      "reason": "安全リスクが高いと導入時の安全設計が複雑"
+    },
+    {
+      "field": "environment",
+      "valueScores": {
+        "Clean": 0,
+        "Normal": 10,
+        "Harsh": 30
+      },
+      "reason": "過酷環境では設備故障リスクが高い"
+    },
+    {
+      "field": "precisionRequired",
+      "valueScores": {
+        "Loose": 5,
+        "Medium": 15,
+        "Tight": 30
+      },
+      "reason": "精度要求が厳しいと品質担保が難しい"
+    },
+    {
+      "field": "inputStandardization",
+      "valueScores": {
+        "AlreadyStandardized": 0,
+        "CanStandardize": 10,
+        "HardToStandardize": 30
+      },
+      "reason": "標準化困難だと設備設計リスク大"
+    },
+    {
+      "field": "integrationNeed",
+      "valueScores": {
+        "None": 5,
+        "Some": 15,
+        "High": 35
+      },
+      "reason": "連携が複雑なほど導入リスク増"
+    },
+    {
+      "field": "budgetRange",
+      "valueScores": {
+        "<0.3M": 5,
+        "0.3-1M": 10,
+        "1-5M": 20,
+        ">5M": 35
+      },
+      "reason": "予算が小さいと選択肢が限られリスク増"
+    }
+  ],
+  "approachTriggers": [
+    {
+      "category": "Standardize",
+      "conditions": [
+        {
+          "field": "inputStandardization",
+          "values": ["CanStandardize", "HardToStandardize"],
+          "weight": 3
+        },
+        {
+          "field": "variability",
+          "values": ["Medium", "High"],
+          "weight": 2
+        }
+      ],
+      "description": "標準化・整流化・治具化",
+      "rationale": "まずばらつきを抑えることで自動化の土台を作る"
+    },
+    {
+      "category": "SemiAutomation",
+      "conditions": [
+        {
+          "field": "budgetRange",
+          "values": ["<0.3M", "0.3-1M"],
+          "weight": 2
+        },
+        {
+          "field": "volumePerMonth",
+          "values": ["<100", "100-1000"],
+          "weight": 1
+        }
+      ],
+      "description": "補助具・ポカヨケ・ワークフロー改善",
+      "rationale": "低予算・少量でも効果が出やすい半自動化"
+    },
+    {
+      "category": "Robot",
+      "conditions": [
+        {
+          "field": "taskType",
+          "values": ["PhysicalHandling", "Assembly", "Packaging"],
+          "weight": 3
+        },
+        {
+          "field": "volumePerMonth",
+          "values": ["1000-10000", ">10000"],
+          "weight": 2
+        },
+        {
+          "field": "budgetRange",
+          "values": ["1-5M", ">5M"],
+          "weight": 1
+        }
+      ],
+      "description": "ロボット・自動機・搬送機",
+      "rationale": "物理作業で量が多い場合はロボット化が効果的"
+    },
+    {
+      "category": "Software",
+      "conditions": [
+        {
+          "field": "taskType",
+          "values": ["Admin", "DataEntry"],
+          "weight": 3
+        },
+        {
+          "field": "budgetRange",
+          "values": ["<0.3M", "0.3-1M"],
+          "weight": 1
+        }
+      ],
+      "description": "RPA・スクリプト・自動集計",
+      "rationale": "事務作業は比較的低コストで自動化可能"
+    },
+    {
+      "category": "Sensing",
+      "conditions": [
+        {
+          "field": "taskType",
+          "values": ["Inspection"],
+          "weight": 3
+        },
+        {
+          "field": "qualityCriticality",
+          "values": ["Medium", "High"],
+          "weight": 2
+        }
+      ],
+      "description": "センサー・画像検査",
+      "rationale": "検査作業は自動検査で品質安定化"
+    }
+  ],
+  "additionalQuestionTemplates": [
+    {
+      "condition": {
+        "field": "variability",
+        "values": ["High"]
+      },
+      "question": "ばらつきの原因（材料・設備・手順）を特定できていますか？"
+    },
+    {
+      "condition": {
+        "field": "environment",
+        "values": ["Harsh"]
+      },
+      "question": "環境改善（防塵・温度管理等）は検討可能ですか？"
+    },
+    {
+      "condition": {
+        "field": "inputStandardization",
+        "values": ["HardToStandardize"]
+      },
+      "question": "標準化できない理由は何ですか？（仕様・顧客要求・技術的制約）"
+    },
+    {
+      "condition": {
+        "field": "integrationNeed",
+        "values": ["High"]
+      },
+      "question": "連携先システムのAPI仕様やデータフォーマットは明確ですか？"
+    },
+    {
+      "condition": {
+        "field": "safetyRisk",
+        "values": ["High"]
+      },
+      "question": "安全対策（柵・センサー・非常停止）の設置スペースは確保できますか？"
+    },
+    {
+      "condition": {
+        "field": "budgetRange",
+        "values": ["<0.3M"]
+      },
+      "question": "投資回収期間の目安は設定されていますか？（1年以内/2-3年等）"
+    },
+    {
+      "condition": {
+        "field": "volumePerMonth",
+        "values": ["<100"]
+      },
+      "question": "今後、処理量が増える見込みはありますか？"
+    }
+  ],
+  "conclusions": [
+    {
+      "scoreRange": [80, 100],
+      "text": "自動化に非常に適した作業です。速やかに導入検討をおすすめします。"
+    },
+    {
+      "scoreRange": [60, 79],
+      "text": "自動化効果が見込めます。条件を整えて段階的に進めましょう。"
+    },
+    {
+      "scoreRange": [40, 59],
+      "text": "半自動化や標準化から始め、将来的な完全自動化を目指しましょう。"
+    },
+    {
+      "scoreRange": [20, 39],
+      "text": "現時点では自動化が難しい可能性があります。まず改善・標準化を優先しましょう。"
+    },
+    {
+      "scoreRange": [0, 19],
+      "text": "自動化は困難です。作業方法の見直しや外注化等の代替案を検討してください。"
+    }
+  ]
+}
