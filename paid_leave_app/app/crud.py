@@ -152,6 +152,7 @@ def update_taking(db: Session, taking_id: int, taking: schemas.LeaveTakingUpdate
         db, db_taking.employee_id, db_taking.date
     )
 
+    db.commit()
     db.refresh(db_taking)
     return db_taking
 
@@ -174,4 +175,5 @@ def delete_taking(db: Session, taking_id: int) -> bool:
     # この日以降を再計算
     services.recalculate_usages_for_employee(db, employee_id, taking_date)
 
+    db.commit()
     return True
