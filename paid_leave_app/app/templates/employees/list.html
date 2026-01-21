@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}従業員一覧 - 有給管理システム{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h1>従業員一覧</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="/employees/new" class="btn btn-success">新規登録</a>
+        <form action="/reports/generate-all-grants" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-primary" onclick="return confirm('全従業員の有給付与を自動生成します。よろしいですか？')">
+                全員の付与生成
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>社員番号</th>
+                <th>氏名</th>
+                <th>入社日</th>
+                <th>在籍</th>
+                <th>残日数</th>
+                <th>次の失効日</th>
+                <th>次の失効日数</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in employees %}
+            <tr>
+                <td>{{ item.employee.employee_code }}</td>
+                <td>
+                    <a href="/employees/{{ item.employee.id }}">{{ item.employee.name }}</a>
+                </td>
+                <td>{{ item.employee.hire_date }}</td>
+                <td>
+                    {% if item.employee.active %}
+                    <span class="badge bg-success">在籍</span>
+                    {% else %}
+                    <span class="badge bg-secondary">退職</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <strong>{{ item.remaining }}日</strong>
+                </td>
+                <td>
+                    {% if item.next_expiry_date %}
+                    {{ item.next_expiry_date }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.next_expiry_days > 0 %}
+                    <span class="badge bg-warning">{{ item.next_expiry_days }}日</span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="/employees/{{ item.employee.id }}" class="btn btn-sm btn-primary">詳細</a>
+                    <a href="/employees/{{ item.employee.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not employees %}
+<div class="alert alert-info" role="alert">
+    従業員が登録されていません。「新規登録」ボタンから従業員を登録してください。
+</div>
+{% endif %}
+{% endblock %}

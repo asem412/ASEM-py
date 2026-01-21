@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}レポート - 有給管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>レポート</h1>
+
+        <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">CSV出力</h5>
+                        <p class="card-text">全従業員の有給データをCSVファイルで出力します。</p>
+                        <a href="/reports/csv" class="btn btn-primary">CSV出力へ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">PDF台帳（予定）</h5>
+                        <p class="card-text">PDF形式での台帳出力機能（今後実装予定）</p>
+                        <button class="btn btn-secondary" disabled>準備中</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

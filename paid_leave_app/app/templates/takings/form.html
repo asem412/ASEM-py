@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if taking %}取得実績編集{% else %}取得実績登録{% endif %} - 有給管理システム
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>{% if taking %}取得実績編集{% else %}取得実績登録{% endif %}</h1>
+
+        <form method="post" action="{% if taking %}/takings/{{ taking.id }}{% else %}/takings/{% endif %}">
+            {% if not taking %}
+            <div class="mb-3">
+                <label for="employee_id" class="form-label">従業員 *</label>
+                <select class="form-select" id="employee_id" name="employee_id" required>
+                    <option value="">選択してください</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}"
+                            {% if emp.id == selected_employee_id %}selected{% endif %}>
+                        {{ emp.employee_code }} - {{ emp.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="date" class="form-label">取得日 *</label>
+                <input type="date" class="form-control" id="date" name="date"
+                       value="{% if taking %}{{ taking.date }}{% endif %}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="kind" class="form-label">種別 *</label>
+                <select class="form-select" id="kind" name="kind" required>
+                    {% for k in kinds %}
+                    <option value="{{ k }}" {% if taking and taking.kind == k %}selected{% endif %}>
+                        {{ k }}
+                        {% if k == "全日" %}(1.0日){% else %}(0.5日){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="note" class="form-label">メモ</label>
+                <textarea class="form-control" id="note" name="note" rows="3">{% if taking %}{{ taking.note or "" }}{% endif %}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">保存</button>
+                {% if taking %}
+                <a href="/employees/{{ taking.employee_id }}" class="btn btn-secondary">キャンセル</a>
+                {% else %}
+                <a href="/employees/" class="btn btn-secondary">キャンセル</a>
+                {% endif %}
+            </div>
+        </form>
+
+        <div class="alert alert-info" role="alert">
+            <strong>注意:</strong> 有給残日数が不足している場合は登録できません。
+        </div>
+    </div>
+</div>
+{% endblock %}

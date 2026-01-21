@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}CSV出力 - 有給管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>全員まとめCSV出力</h1>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">出力期間を指定</h5>
+                <form action="/reports/csv/download" method="get">
+                    <div class="mb-3">
+                        <label for="from_date" class="form-label">開始日</label>
+                        <input type="date" class="form-control" id="from_date" name="from_date"
+                               value="{{ from_date }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="to_date" class="form-label">終了日</label>
+                        <input type="date" class="form-control" id="to_date" name="to_date"
+                               value="{{ to_date }}" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">CSVダウンロード</button>
+                    <a href="/employees/" class="btn btn-secondary">戻る</a>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info" role="alert">
+            <h5 class="alert-heading">出力内容</h5>
+            <p>以下の項目が出力されます:</p>
+            <ul>
+                <li>従業員ID</li>
+                <li>氏名</li>
+                <li>入社日</li>
+                <li>在籍状況</li>
+                <li>期間内付与合計</li>
+                <li>期間内取得合計</li>
+                <li>期間内失効合計</li>
+                <li>現在残日数</li>
+                <li>直近付与日</li>
+                <li>次に失効する日</li>
+                <li>次に失効する残日数</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

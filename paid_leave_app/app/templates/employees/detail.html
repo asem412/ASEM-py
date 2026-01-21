@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}{{ employee.name }} - 従業員詳細{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <h1>{{ employee.name }}</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="/employees/{{ employee.id }}/edit" class="btn btn-secondary">編集</a>
+        <a href="/takings/new?employee_id={{ employee.id }}" class="btn btn-success">取得登録</a>
+        <form action="/employees/{{ employee.id }}/generate-grants" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-primary">付与生成</button>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">基本情報</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>社員番号:</strong> {{ employee.employee_code }}</p>
+                <p><strong>入社日:</strong> {{ employee.hire_date }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>在籍:</strong>
+                    {% if employee.active %}
+                    <span class="badge bg-success">在籍中</span>
+                    {% else %}
+                    <span class="badge bg-secondary">退職</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">有給サマリー</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <h4 class="text-primary">{{ summary.remaining }}日</h4>
+                <p class="text-muted">現在の残日数</p>
+            </div>
+            <div class="col-md-3">
+                <h4>{{ summary.total_granted }}日</h4>
+                <p class="text-muted">付与合計</p>
+            </div>
+            <div class="col-md-3">
+                <h4>{{ summary.total_taken }}日</h4>
+                <p class="text-muted">取得合計</p>
+            </div>
+            <div class="col-md-3">
+                <h4>{{ summary.total_expired }}日</h4>
+                <p class="text-muted">失効合計</p>
+            </div>
+        </div>
+        {% if summary.next_expiry_date %}
+        <div class="alert alert-warning mt-3" role="alert">
+            <strong>次の失効予定:</strong> {{ summary.next_expiry_date }} に {{ summary.next_expiry_days }}日が失効します
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">有効な付与一覧</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>付与日</th>
+                        <th>付与日数</th>
+                        <th>消化済</th>
+                        <th>残日数</th>
+                        <th>失効日</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in grants %}
+                    <tr>
+                        <td>{{ item.grant.grant_date }}</td>
+                        <td>{{ item.grant.days }}日</td>
+                        <td>{{ item.used }}日</td>
+                        <td><strong>{{ item.remaining }}日</strong></td>
+                        <td>
+                            {{ item.grant.expire_date }}
+                            {% set days_until_expiry = (item.grant.expire_date - summary.next_expiry_date).days if summary.next_expiry_date else 0 %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not grants %}
+        <p class="text-muted">有効な付与がありません。「付与生成」ボタンで付与を生成してください。</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if expired_grants %}
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">失効済み付与</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>付与日</th>
+                        <th>付与日数</th>
+                        <th>失効日</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grant in expired_grants %}
+                    <tr>
+                        <td>{{ grant.grant_date }}</td>
+                        <td>{{ grant.days }}日</td>
+                        <td>{{ grant.expire_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">取得履歴</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>取得日</th>
+                        <th>種別</th>
+                        <th>日数</th>
+                        <th>メモ</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for taking in takings %}
+                    <tr>
+                        <td>{{ taking.date }}</td>
+                        <td>
+                            {% if taking.kind == "全日" %}
+                            <span class="badge bg-primary">{{ taking.kind }}</span>
+                            {% else %}
+                            <span class="badge bg-info">{{ taking.kind }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ taking.days }}日</td>
+                        <td>{{ taking.note or "-" }}</td>
+                        <td>
+                            <a href="/takings/{{ taking.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
+                            <form action="/takings/{{ taking.id }}/delete" method="post" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('削除してよろしいですか？')">削除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not takings %}
+        <p class="text-muted">取得履歴がありません。</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mb-3">
+    <a href="/employees/" class="btn btn-secondary">従業員一覧に戻る</a>
+</div>
+{% endblock %}

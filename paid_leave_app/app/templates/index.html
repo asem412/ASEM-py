@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}トップページ - 有給管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">有給管理システム</h1>
+        <p class="lead">従業員の有給休暇を管理するシステムです。</p>
+
+        <div class="row mt-5">
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">従業員管理</h5>
+                        <p class="card-text">従業員の登録・編集と有給残日数の確認</p>
+                        <a href="/employees/" class="btn btn-primary">従業員一覧へ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">取得登録</h5>
+                        <p class="card-text">有給休暇の取得実績を登録</p>
+                        <a href="/takings/new" class="btn btn-primary">取得登録へ</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">レポート出力</h5>
+                        <p class="card-text">全従業員の有給データをCSV出力</p>
+                        <a href="/reports/csv" class="btn btn-primary">CSV出力へ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+            <h5 class="alert-heading">クイックスタート</h5>
+            <ol>
+                <li>従業員を登録</li>
+                <li>各従業員の詳細ページで「付与生成」ボタンをクリックして有給を自動付与</li>
+                <li>取得登録画面から有給休暇の取得実績を入力</li>
+                <li>必要に応じてCSVでレポート出力</li>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}
