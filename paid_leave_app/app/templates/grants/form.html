@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if grant %}付与編集{% else %}付与追加{% endif %} - 有給管理システム
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h1>{% if grant %}付与編集{% else %}付与追加{% endif %}</h1>
+        <p class="text-muted">従業員: {{ employee.name }} ({{ employee.employee_code }})</p>
+
+        <form method="post" action="{% if grant %}/employees/grants/{{ grant.id }}{% else %}/employees/{{ employee.id }}/grants{% endif %}">
+            <div class="mb-3">
+                <label for="grant_date" class="form-label">付与日 *</label>
+                <input type="date" class="form-control" id="grant_date" name="grant_date"
+                       value="{% if grant %}{{ grant.grant_date }}{% endif %}" required>
+                <div class="form-text">有給が付与された日付を入力してください</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="days" class="form-label">付与日数 *</label>
+                <input type="number" step="0.5" min="0" max="100" class="form-control" id="days" name="days"
+                       value="{% if grant %}{{ grant.days }}{% else %}10{% endif %}" required>
+                <div class="form-text">0.5日単位で入力できます（例: 10, 10.5, 11）</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="expire_date" class="form-label">失効日 *</label>
+                <input type="date" class="form-control" id="expire_date" name="expire_date"
+                       value="{% if grant %}{{ grant.expire_date }}{% endif %}" required>
+                <div class="form-text">通常は付与日の2年後です</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="note" class="form-label">備考</label>
+                <textarea class="form-control" id="note" name="note" rows="2">{% if grant %}{{ grant.note or "" }}{% endif %}</textarea>
+            </div>
+
+            <div class="alert alert-info" role="alert">
+                <strong>💡 ヒント:</strong>
+                <ul class="mb-0">
+                    <li>途中から運用を始める場合、前職からの繰越分や過去の付与をここから手動で追加できます</li>
+                    <li>失効日は通常、付与日の2年後の前日になります（例: 2024/4/1付与 → 2026/3/31失効）</li>
+                    <li>付与を追加・編集すると、取得実績が自動的に再計算されます</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="/employees/{{ employee.id }}" class="btn btn-secondary">キャンセル</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// 付与日が変更されたら、失効日を自動計算（2年後の前日）
+document.getElementById('grant_date').addEventListener('change', function(e) {
+    if (e.target.value) {
+        const grantDate = new Date(e.target.value);
+        // 2年後
+        grantDate.setFullYear(grantDate.getFullYear() + 2);
+        // 1日前
+        grantDate.setDate(grantDate.getDate() - 1);
+
+        const expireDate = grantDate.toISOString().split('T')[0];
+        document.getElementById('expire_date').value = expireDate;
+    }
+});
+</script>
+{% endblock %}

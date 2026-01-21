@@ -171,3 +171,129 @@ async def generate_grants(
     count = services.generate_grants_for_employee(db, employee)
 
     return RedirectResponse(url=f"/employees/{employee_id}", status_code=303)
+
+
+@router.get("/{employee_id}/grants/new", response_class=HTMLResponse)
+async def new_grant_form(
+    request: Request,
+    employee_id: int,
+    db: Session = Depends(get_db)
+):
+    """付与追加フォーム"""
+    employee = crud.get_employee(db, employee_id)
+    if not employee:
+        raise HTTPException(status_code=404, detail="従業員が見つかりません")
+
+    return templates.TemplateResponse(
+        "grants/form.html",
+        {"request": request, "employee": employee, "grant": None}
+    )
+
+
+@router.post("/{employee_id}/grants")
+async def create_grant(
+    employee_id: int,
+    grant_date: date = Form(...),
+    days: float = Form(...),
+    expire_date: date = Form(...),
+    note: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    """付与を作成"""
+    from decimal import Decimal
+    from app import models
+
+    grant = models.LeaveGrant(
+        employee_id=employee_id,
+        grant_date=grant_date,
+        days=Decimal(str(days)),
+        expire_date=expire_date,
+        note=note if note else None
+    )
+    db.add(grant)
+    db.commit()
+
+    # 取得実績を再計算（新しい付与が追加されたため）
+    services.recalculate_usages_for_employee(db, employee_id)
+
+    return RedirectResponse(url=f"/employees/{employee_id}", status_code=303)
+
+
+@router.get("/grants/{grant_id}/edit", response_class=HTMLResponse)
+async def edit_grant_form(
+    request: Request,
+    grant_id: int,
+    db: Session = Depends(get_db)
+):
+    """付与編集フォーム"""
+    from app import models
+
+    grant = db.query(models.LeaveGrant).filter(models.LeaveGrant.id == grant_id).first()
+    if not grant:
+        raise HTTPException(status_code=404, detail="付与が見つかりません")
+
+    employee = crud.get_employee(db, grant.employee_id)
+
+    return templates.TemplateResponse(
+        "grants/form.html",
+        {"request": request, "employee": employee, "grant": grant}
+    )
+
+
+@router.post("/grants/{grant_id}")
+async def update_grant(
+    grant_id: int,
+    grant_date: date = Form(...),
+    days: float = Form(...),
+    expire_date: date = Form(...),
+    note: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    """付与を更新"""
+    from decimal import Decimal
+    from app import models
+
+    grant = db.query(models.LeaveGrant).filter(models.LeaveGrant.id == grant_id).first()
+    if not grant:
+        raise HTTPException(status_code=404, detail="付与が見つかりません")
+
+    employee_id = grant.employee_id
+
+    grant.grant_date = grant_date
+    grant.days = Decimal(str(days))
+    grant.expire_date = expire_date
+    grant.note = note if note else None
+
+    db.commit()
+
+    # 取得実績を再計算
+    services.recalculate_usages_for_employee(db, employee_id)
+
+    return RedirectResponse(url=f"/employees/{employee_id}", status_code=303)
+
+
+@router.post("/grants/{grant_id}/delete")
+async def delete_grant(
+    grant_id: int,
+    db: Session = Depends(get_db)
+):
+    """付与を削除"""
+    from app import models
+
+    grant = db.query(models.LeaveGrant).filter(models.LeaveGrant.id == grant_id).first()
+    if not grant:
+        raise HTTPException(status_code=404, detail="付与が見つかりません")
+
+    employee_id = grant.employee_id
+
+    # この付与に紐づく消化明細を削除
+    db.query(models.LeaveUsage).filter(models.LeaveUsage.grant_id == grant_id).delete()
+
+    # 付与を削除
+    db.delete(grant)
+    db.commit()
+
+    # 取得実績を再計算
+    services.recalculate_usages_for_employee(db, employee_id)
+
+    return RedirectResponse(url=f"/employees/{employee_id}", status_code=303)
