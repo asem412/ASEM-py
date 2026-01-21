@@ -105,6 +105,17 @@ async def employee_detail(
     # 取得一覧
     takings = crud.get_takings(db, employee_id)
 
+    # 取得履歴を年別にグループ化
+    takings_by_year = {}
+    for taking in takings:
+        year = taking.date.year
+        if year not in takings_by_year:
+            takings_by_year[year] = []
+        takings_by_year[year].append(taking)
+
+    # 年を降順にソート
+    sorted_years = sorted(takings_by_year.keys(), reverse=True)
+
     return templates.TemplateResponse(
         "employees/detail.html",
         {
@@ -113,7 +124,9 @@ async def employee_detail(
             "summary": summary,
             "grants": grants_with_remaining,
             "expired_grants": expired_grants,
-            "takings": takings
+            "takings": takings,
+            "takings_by_year": takings_by_year,
+            "sorted_years": sorted_years
         }
     )
 

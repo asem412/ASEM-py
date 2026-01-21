@@ -123,28 +123,33 @@
 {% if expired_grants %}
 <div class="card mb-4">
     <div class="card-header bg-secondary text-white">
-        <h5 class="mb-0">失効済み付与</h5>
+        <button class="btn btn-sm btn-light float-end" type="button" data-bs-toggle="collapse" data-bs-target="#expiredGrantsCollapse" aria-expanded="false">
+            表示/非表示
+        </button>
+        <h5 class="mb-0">失効済み付与 ({{ expired_grants|length }}件)</h5>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>付与日</th>
-                        <th>付与日数</th>
-                        <th>失効日</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for grant in expired_grants %}
-                    <tr>
-                        <td>{{ grant.grant_date }}</td>
-                        <td>{{ grant.days }}日</td>
-                        <td>{{ grant.expire_date }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="collapse" id="expiredGrantsCollapse">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>付与日</th>
+                            <th>付与日数</th>
+                            <th>失効日</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for grant in expired_grants %}
+                        <tr>
+                            <td>{{ grant.grant_date }}</td>
+                            <td>{{ grant.days }}日</td>
+                            <td>{{ grant.expire_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -155,43 +160,107 @@
         <h5 class="mb-0">取得履歴</h5>
     </div>
     <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th>取得日</th>
-                        <th>種別</th>
-                        <th>日数</th>
-                        <th>メモ</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for taking in takings %}
-                    <tr>
-                        <td>{{ taking.date }}</td>
-                        <td>
-                            {% if taking.kind == "全日" %}
-                            <span class="badge bg-primary">{{ taking.kind }}</span>
-                            {% else %}
-                            <span class="badge bg-info">{{ taking.kind }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ taking.days }}日</td>
-                        <td>{{ taking.note or "-" }}</td>
-                        <td>
-                            <a href="/takings/{{ taking.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
-                            <form action="/takings/{{ taking.id }}/delete" method="post" style="display: inline;">
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('削除してよろしいですか？')">削除</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% if not takings %}
+        {% if takings %}
+            {% if sorted_years|length > 1 %}
+            <!-- 年別タブ表示 -->
+            <ul class="nav nav-tabs" id="yearTabs" role="tablist">
+                {% for year in sorted_years %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if loop.first %}active{% endif %}"
+                            id="year-{{ year }}-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#year-{{ year }}"
+                            type="button"
+                            role="tab">
+                        {{ year }}年 ({{ takings_by_year[year]|length }}件)
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content mt-3" id="yearTabsContent">
+                {% for year in sorted_years %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}"
+                     id="year-{{ year }}"
+                     role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>取得日</th>
+                                    <th>種別</th>
+                                    <th>日数</th>
+                                    <th>メモ</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for taking in takings_by_year[year] %}
+                                <tr>
+                                    <td>{{ taking.date }}</td>
+                                    <td>
+                                        {% if taking.kind == "全日" %}
+                                        <span class="badge bg-primary">{{ taking.kind }}</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ taking.kind }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ taking.days }}日</td>
+                                    <td>{{ taking.note or "-" }}</td>
+                                    <td>
+                                        <a href="/takings/{{ taking.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
+                                        <form action="/takings/{{ taking.id }}/delete" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('削除してよろしいですか？')">削除</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- 年が1つだけの場合は通常表示 -->
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>取得日</th>
+                            <th>種別</th>
+                            <th>日数</th>
+                            <th>メモ</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taking in takings %}
+                        <tr>
+                            <td>{{ taking.date }}</td>
+                            <td>
+                                {% if taking.kind == "全日" %}
+                                <span class="badge bg-primary">{{ taking.kind }}</span>
+                                {% else %}
+                                <span class="badge bg-info">{{ taking.kind }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ taking.days }}日</td>
+                            <td>{{ taking.note or "-" }}</td>
+                            <td>
+                                <a href="/takings/{{ taking.id }}/edit" class="btn btn-sm btn-secondary">編集</a>
+                                <form action="/takings/{{ taking.id }}/delete" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('削除してよろしいですか？')">削除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        {% else %}
         <p class="text-muted">取得履歴がありません。</p>
         {% endif %}
     </div>
