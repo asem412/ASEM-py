@@ -138,9 +138,12 @@ async def download_csv(
     output.seek(0)
     filename = f"paid_leave_report_{start_date}_{end_date}.csv"
 
+    # UTF-8 BOMを付けてExcelで正しく開けるようにする
+    csv_content = '\ufeff' + output.getvalue()
+
     return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv",
+        iter([csv_content.encode('utf-8')]),
+        media_type="text/csv; charset=utf-8",
         headers={
             "Content-Disposition": f"attachment; filename={filename}"
         }
